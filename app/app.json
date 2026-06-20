@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "ArenaX TicTacToe",
+    "slug": "tic-tac-toe-rn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0c29"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.arenax.tictactoe"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

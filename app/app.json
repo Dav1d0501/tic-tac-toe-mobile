@@ -21,6 +21,15 @@
     },
     "web": {
       "bundler": "metro"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ArenaX to access your photos to set a profile picture.",
+          "cameraPermission": "Allow ArenaX to use the camera to take a profile picture."
+        }
+      ]
+    ]
   }
 }

@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import socket from "../socket";
 import Board from "../components/Board";
+import { useTheme } from "../context/ThemeContext";
 
 const GameScreen = ({ route, navigation }) => {
   const { mode, room, size: onlineSize, isHost: initialIsHost, role } = route.params || {};
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [isHost, setIsHost] = useState(initialIsHost || false);
   const [localSize, setLocalSize] = useState(3);
@@ -148,24 +151,25 @@ const GameScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f0c29" },
-  headerTop: { marginBottom: 10 },
-  backBtn: { alignSelf: "flex-start" },
-  backText: { color: "#4cc9f0", fontWeight: "600", fontSize: 15 },
-  title: { color: "#fff", fontSize: 26, fontWeight: "800", textAlign: "center", marginBottom: 16 },
-  controlsGroup: { marginBottom: 14, alignItems: "center" },
-  controlLabel: { color: "#d9d2e8", marginBottom: 8, fontWeight: "600" },
-  controlRow: { flexDirection: "row", gap: 10 },
-  ctrlBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  ctrlBtnActive: { backgroundColor: "#4cc9f0" },
-  ctrlBtnText: { color: "#d9d2e8", fontWeight: "600" },
-  ctrlBtnTextActive: { color: "#0f0c29", fontWeight: "800" },
-});
+const createStyles = (c) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.bg },
+    headerTop: { marginBottom: 10 },
+    backBtn: { alignSelf: "flex-start" },
+    backText: { color: c.accent, fontWeight: "600", fontSize: 15 },
+    title: { color: c.text, fontSize: 26, fontWeight: "800", textAlign: "center", marginBottom: 16 },
+    controlsGroup: { marginBottom: 14, alignItems: "center" },
+    controlLabel: { color: c.textSecondary, marginBottom: 8, fontWeight: "600" },
+    controlRow: { flexDirection: "row", gap: 10 },
+    ctrlBtn: {
+      paddingHorizontal: 18,
+      paddingVertical: 8,
+      borderRadius: 8,
+      backgroundColor: c.subtle,
+    },
+    ctrlBtnActive: { backgroundColor: c.accent },
+    ctrlBtnText: { color: c.textSecondary, fontWeight: "600" },
+    ctrlBtnTextActive: { color: c.onAccent, fontWeight: "800" },
+  });
 
 export default GameScreen;

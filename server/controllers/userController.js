@@ -182,3 +182,63 @@ exports.updateEmail = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+// Returns the full profile of one user for the profile screen
+exports.getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(
+            req.params.userId,
+            'username email wins losses isOnline avatar createdAt'
+        );
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        res.status(500).json({ message: "Error fetching profile" });
+    }
+};
+
+// Updates username and email together, blocking values already taken
+exports.updateProfile = async (req, res) => {
+    const { userId, username, email, avatar } = req.body;
+    try {
+        if (!userId) return res.status(400).json({ message: "User ID is required" });
+
+        const updates = {};
+        if (username) updates.username = username;
+        if (email) updates.email = email;
+        if (avatar !== undefined) updates.avatar = avatar;
+
+        if (username || email) {
+            const orConditions = [];
+            if (username) orConditions.push({ username });
+            if (email) orConditions.push({ email });
+
+            const clash = await User.findOne({
+                _id: { $ne: userId },
+                $or: orConditions,
+            });
+            if (clash) {
+                return res.status(409).json({ message: "Username or email already taken" });
+            }
+        }
+
+        const updated = await User.findByIdAndUpdate(userId, updates, { new: true });
+        if (!updated) return res.status(404).json({ message: "User not found" });
+
+        res.json({
+            message: "Profile updated",
+            user: {
+                _id: updated._id,
+                username: updated.username,
+                email: updated.email,
+                wins: updated.wins,
+                losses: updated.losses,
+                avatar: updated.avatar,
+            },
+        });
+    } catch (error) {
+        console.error("Update Profile Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -14,12 +14,15 @@ import { getBestMove } from "../utils/computerAI";
 import socket from "../socket";
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 360);
 
 const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) => {
   const { user, updateUser } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [board, setBoard] = useState(Array(size * size).fill(null));
   const [isXNext, setIsXNext] = useState(true);
@@ -221,9 +224,9 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
       <View style={styles.matchInfo}>
         {gameMode === "multiplayer" && opponent ? (
           <Text style={styles.matchText}>
-            <Text style={{ color: "#4cc9f0" }}>You ({myOnlineSymbol})</Text>
+            <Text style={{ color: colors.accent }}>You ({myOnlineSymbol})</Text>
             {"  VS  "}
-            <Text style={{ color: "#ff4d4d" }}>
+            <Text style={{ color: colors.danger }}>
               {opponent.username} ({myOnlineSymbol === "X" ? "O" : "X"})
             </Text>
           </Text>
@@ -270,8 +273,8 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
               style={[
                 styles.cellText,
                 { fontSize: Math.max(14, cellSize * 0.5) },
-                cell === "X" && { color: "#4cc9f0" },
-                cell === "O" && { color: "#ff4d4d" },
+                cell === "X" && { color: colors.accent },
+                cell === "O" && { color: colors.danger },
               ]}
             >
               {cell}
@@ -305,7 +308,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
                   >
                     <Text style={styles.msgSender}>{isMe ? "You" : msg.sender}</Text>
                     <View style={[styles.bubble, isMe ? styles.bubbleMine : styles.bubbleOpp]}>
-                      <Text style={[styles.bubbleText, { color: isMe ? "#0f0c29" : "#fff" }]}>
+                      <Text style={[styles.bubbleText, { color: isMe ? colors.onAccent : colors.text }]}>
                         {msg.message}
                       </Text>
                     </View>
@@ -321,7 +324,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
               value={currentMessage}
               onChangeText={setCurrentMessage}
               placeholder="Type a message..."
-              placeholderTextColor="#887a7a"
+              placeholderTextColor={colors.placeholder}
               onSubmitEditing={handleSendMessage}
             />
             <TouchableOpacity style={styles.sendBtn} onPress={handleSendMessage}>
@@ -334,71 +337,72 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { alignItems: "center", marginTop: 10 },
-  matchInfo: { marginBottom: 12 },
-  matchText: { color: "#e0e0e0", fontSize: 16, fontWeight: "700" },
-  status: { minHeight: 50, justifyContent: "center", marginBottom: 10 },
-  turn: { color: "#d9d2e8", fontSize: 18 },
-  turnIndicator: { color: "#4cc9f0", fontWeight: "800", fontSize: 20 },
-  winnerMsg: { color: "#fff", fontSize: 22, fontWeight: "800" },
-  friendsLabel: { color: "#20c997", fontWeight: "700", fontSize: 15 },
-  friendMsg: { color: "#4cc9f0", fontWeight: "700" },
-  addFriendBtn: { backgroundColor: "#20c997", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
-  addFriendText: { color: "#fff", fontWeight: "700" },
-  board: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  cell: {
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "#161229",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cellText: { fontWeight: "800" },
-  resetBtn: {
-    marginTop: 18,
-    backgroundColor: "#4cc9f0",
-    borderRadius: 10,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-  },
-  resetText: { color: "#0f0c29", fontWeight: "800", fontSize: 16 },
-  chat: {
-    width: BOARD_WIDTH,
-    marginTop: 22,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 12,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  chatMessages: { maxHeight: 180, marginBottom: 8 },
-  chatEmpty: { color: "#887a7a", fontStyle: "italic", textAlign: "center", padding: 10 },
-  msgRow: { marginBottom: 8, maxWidth: "80%" },
-  msgMine: { alignSelf: "flex-end", alignItems: "flex-end" },
-  msgOpp: { alignSelf: "flex-start", alignItems: "flex-start" },
-  msgSender: { color: "#9b93ad", fontSize: 11, marginBottom: 2 },
-  bubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
-  bubbleMine: { backgroundColor: "#4cc9f0" },
-  bubbleOpp: { backgroundColor: "rgba(255,255,255,0.12)" },
-  bubbleText: {},
-  chatInputArea: { flexDirection: "row", gap: 8, alignItems: "center" },
-  chatInput: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: "#fff",
-  },
-  sendBtn: { backgroundColor: "#4cc9f0", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 },
-  sendText: { color: "#0f0c29", fontWeight: "800" },
-});
+const createStyles = (c) =>
+  StyleSheet.create({
+    container: { alignItems: "center", marginTop: 10 },
+    matchInfo: { marginBottom: 12 },
+    matchText: { color: c.text, fontSize: 16, fontWeight: "700" },
+    status: { minHeight: 50, justifyContent: "center", marginBottom: 10 },
+    turn: { color: c.textSecondary, fontSize: 18 },
+    turnIndicator: { color: c.accent, fontWeight: "800", fontSize: 20 },
+    winnerMsg: { color: c.text, fontSize: 22, fontWeight: "800" },
+    friendsLabel: { color: c.success, fontWeight: "700", fontSize: 15 },
+    friendMsg: { color: c.accent, fontWeight: "700" },
+    addFriendBtn: { backgroundColor: c.success, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
+    addFriendText: { color: "#fff", fontWeight: "700" },
+    board: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      backgroundColor: c.boardBg,
+      borderRadius: 8,
+      overflow: "hidden",
+    },
+    cell: {
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+      backgroundColor: c.cellBg,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cellText: { fontWeight: "800" },
+    resetBtn: {
+      marginTop: 18,
+      backgroundColor: c.accent,
+      borderRadius: 10,
+      paddingHorizontal: 28,
+      paddingVertical: 12,
+    },
+    resetText: { color: c.onAccent, fontWeight: "800", fontSize: 16 },
+    chat: {
+      width: BOARD_WIDTH,
+      marginTop: 22,
+      backgroundColor: c.card,
+      borderRadius: 12,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+    },
+    chatMessages: { maxHeight: 180, marginBottom: 8 },
+    chatEmpty: { color: c.placeholder, fontStyle: "italic", textAlign: "center", padding: 10 },
+    msgRow: { marginBottom: 8, maxWidth: "80%" },
+    msgMine: { alignSelf: "flex-end", alignItems: "flex-end" },
+    msgOpp: { alignSelf: "flex-start", alignItems: "flex-start" },
+    msgSender: { color: c.textMuted, fontSize: 11, marginBottom: 2 },
+    bubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
+    bubbleMine: { backgroundColor: c.accent },
+    bubbleOpp: { backgroundColor: c.subtle },
+    bubbleText: {},
+    chatInputArea: { flexDirection: "row", gap: 8, alignItems: "center" },
+    chatInput: {
+      flex: 1,
+      backgroundColor: c.inputBg,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: c.text,
+    },
+    sendBtn: { backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 },
+    sendText: { color: c.onAccent, fontWeight: "800" },
+  });
 
 export default Board;

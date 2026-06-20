@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema({
   googleId: {
     type: String, // שדה לזיהוי משתמשי גוגל
   },
+  avatar: {
+    type: String,
+    default: ""
+  },
   wins: {
     type: Number,
     default: 0

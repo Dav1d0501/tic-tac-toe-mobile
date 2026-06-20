@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
 
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Character = ({ color, width, height, radius, blink }) => (
   <View
@@ -67,6 +68,8 @@ const Mascot = () => {
 
 const AuthScreen = () => {
   const { login } = useAuth();
+  const { colors } = useTheme();
+  const dynamic = useMemo(() => createStyles(colors), [colors]);
 
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
@@ -127,24 +130,24 @@ const AuthScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.wrapper}
+      style={dynamic.wrapper}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Text style={styles.brand}>ArenaX</Text>
+        <Text style={dynamic.brand}>ArenaX</Text>
         <Mascot />
 
-        <View style={styles.formCard}>
-          <Text style={styles.title}>{isLogin ? "Welcome back!" : "Create Account"}</Text>
-          <Text style={styles.subtitle}>
+        <View style={dynamic.formCard}>
+          <Text style={dynamic.title}>{isLogin ? "Welcome back!" : "Create Account"}</Text>
+          <Text style={dynamic.subtitle}>
             {isLogin ? "Please enter your details" : "Join the arena today"}
           </Text>
 
-          <Text style={styles.label}>Username</Text>
+          <Text style={dynamic.label}>Username</Text>
           <TextInput
-            style={styles.input}
+            style={dynamic.input}
             placeholder="Player Name"
-            placeholderTextColor="#887a7a"
+            placeholderTextColor={colors.placeholder}
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
@@ -152,11 +155,11 @@ const AuthScreen = () => {
 
           {!isLogin && (
             <>
-              <Text style={styles.label}>Email</Text>
+              <Text style={dynamic.label}>Email</Text>
               <TextInput
-                style={styles.input}
+                style={dynamic.input}
                 placeholder="name@example.com"
-                placeholderTextColor="#887a7a"
+                placeholderTextColor={colors.placeholder}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -165,12 +168,12 @@ const AuthScreen = () => {
             </>
           )}
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={dynamic.label}>Password</Text>
           <View style={styles.passwordRow}>
             <TextInput
-              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+              style={[dynamic.input, { flex: 1, marginBottom: 0 }]}
               placeholder="••••••••"
-              placeholderTextColor="#887a7a"
+              placeholderTextColor={colors.placeholder}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -180,24 +183,24 @@ const AuthScreen = () => {
               style={styles.eyeToggle}
               onPress={() => setShowPassword((s) => !s)}
             >
-              <Text style={{ color: "#cbbcbc" }}>{showPassword ? "🙈" : "👁️"}</Text>
+              <Text style={{ color: colors.textMuted }}>{showPassword ? "🙈" : "👁️"}</Text>
             </TouchableOpacity>
           </View>
 
           {!isLogin && (
-            <Text style={styles.hint}>
+            <Text style={dynamic.hint}>
               Needs: 8+ chars, 1 Uppercase, 1 Number, 1 Special character
             </Text>
           )}
 
           {!!message && (
-            <Text style={[styles.message, isError ? styles.error : styles.success]}>
+            <Text style={[styles.message, isError ? dynamic.error : dynamic.success]}>
               {message}
             </Text>
           )}
 
-          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-            <Text style={styles.submitText}>{isLogin ? "Log in" : "Register"}</Text>
+          <TouchableOpacity style={dynamic.submitBtn} onPress={handleSubmit}>
+            <Text style={dynamic.submitText}>{isLogin ? "Log in" : "Register"}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -207,9 +210,9 @@ const AuthScreen = () => {
               setMessage("");
             }}
           >
-            <Text style={styles.toggleText}>
+            <Text style={dynamic.toggleText}>
               {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <Text style={styles.toggleLink}>{isLogin ? "Sign Up" : "Login"}</Text>
+              <Text style={dynamic.toggleLink}>{isLogin ? "Sign Up" : "Login"}</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -218,17 +221,9 @@ const AuthScreen = () => {
   );
 };
 
+// Layout that does not depend on the theme
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: "#0f0c29" },
   scroll: { flexGrow: 1, justifyContent: "center", padding: 24 },
-  brand: {
-    fontSize: 40,
-    fontWeight: "800",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 10,
-    letterSpacing: 1,
-  },
   mascotRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -237,43 +232,56 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   eye: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#fff" },
-  formCard: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 18,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-  },
-  title: { fontSize: 24, fontWeight: "700", color: "#fff", textAlign: "center" },
-  subtitle: { fontSize: 14, color: "#b8b0c8", textAlign: "center", marginBottom: 18 },
-  label: { color: "#d9d2e8", fontSize: 13, marginBottom: 6, marginTop: 4 },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#fff",
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-  },
   passwordRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   eyeToggle: { paddingHorizontal: 12, paddingVertical: 10, marginLeft: 6 },
-  hint: { fontSize: 12, color: "#887a7a", marginBottom: 10 },
   message: { textAlign: "center", marginVertical: 8, fontWeight: "600" },
-  error: { color: "#ff6b6b" },
-  success: { color: "#20c997" },
-  submitBtn: {
-    backgroundColor: "#4cc9f0",
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 8,
-    alignItems: "center",
-  },
-  submitText: { color: "#0f0c29", fontWeight: "800", fontSize: 16 },
   toggle: { marginTop: 18, alignItems: "center" },
-  toggleText: { color: "#b8b0c8" },
-  toggleLink: { color: "#4cc9f0", fontWeight: "700" },
 });
+
+const createStyles = (c) =>
+  StyleSheet.create({
+    wrapper: { flex: 1, backgroundColor: c.bg },
+    brand: {
+      fontSize: 40,
+      fontWeight: "800",
+      color: c.text,
+      textAlign: "center",
+      marginBottom: 10,
+      letterSpacing: 1,
+    },
+    formCard: {
+      backgroundColor: c.card,
+      borderRadius: 18,
+      padding: 22,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+    },
+    title: { fontSize: 24, fontWeight: "700", color: c.text, textAlign: "center" },
+    subtitle: { fontSize: 14, color: c.textMuted, textAlign: "center", marginBottom: 18 },
+    label: { color: c.textSecondary, fontSize: 13, marginBottom: 6, marginTop: 4 },
+    input: {
+      backgroundColor: c.inputBg,
+      borderRadius: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: c.text,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+    },
+    hint: { fontSize: 12, color: c.placeholder, marginBottom: 10 },
+    error: { color: c.dangerText },
+    success: { color: c.success },
+    submitBtn: {
+      backgroundColor: c.accent,
+      borderRadius: 12,
+      paddingVertical: 14,
+      marginTop: 8,
+      alignItems: "center",
+    },
+    submitText: { color: c.onAccent, fontWeight: "800", fontSize: 16 },
+    toggleText: { color: c.textMuted },
+    toggleLink: { color: c.accent, fontWeight: "700" },
+  });
 
 export default AuthScreen;

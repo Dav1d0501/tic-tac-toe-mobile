@@ -1,9 +1,13 @@
+import { useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const HomeScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const menuItems = [
     { label: "Play Local", onPress: () => navigation.navigate("Game", { mode: "local" }) },
@@ -17,9 +21,14 @@ const HomeScreen = ({ navigation }) => {
         <Text style={styles.greeting}>
           Welcome, <Text style={styles.highlight}>{user ? user.username : "Guest"}</Text>
         </Text>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.topActions}>
+          <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={styles.profileBtn}>
+            <Text style={styles.profileText}>👤 Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -38,47 +47,58 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f0c29" },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  greeting: { color: "#d9d2e8", fontSize: 15 },
-  highlight: { color: "#4cc9f0", fontWeight: "700" },
-  logoutBtn: {
-    backgroundColor: "rgba(255,77,77,0.15)",
-    borderColor: "#ff4d4d",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  logoutText: { color: "#ff6b6b", fontWeight: "600" },
-  content: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 },
-  title: {
-    fontSize: 52,
-    fontWeight: "900",
-    color: "#fff",
-    marginBottom: 50,
-    letterSpacing: 2,
-  },
-  menu: { width: "100%", maxWidth: 360, gap: 16 },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    borderRadius: 14,
-    paddingVertical: 18,
-    paddingHorizontal: 22,
-  },
-  arrow: { color: "#4cc9f0", fontSize: 26, fontWeight: "800", marginRight: 16 },
-  menuText: { color: "#fff", fontSize: 20, fontWeight: "600" },
-});
+const createStyles = (c) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.bg },
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    greeting: { color: c.textSecondary, fontSize: 15 },
+    highlight: { color: c.accent, fontWeight: "700" },
+    topActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+    profileBtn: {
+      backgroundColor: c.subtle,
+      borderColor: c.accent,
+      borderWidth: 1,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    profileText: { color: c.accent, fontWeight: "600" },
+    logoutBtn: {
+      backgroundColor: c.subtle,
+      borderColor: c.danger,
+      borderWidth: 1,
+      borderRadius: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+    },
+    logoutText: { color: c.dangerText, fontWeight: "600" },
+    content: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 },
+    title: {
+      fontSize: 52,
+      fontWeight: "900",
+      color: c.text,
+      marginBottom: 50,
+      letterSpacing: 2,
+    },
+    menu: { width: "100%", maxWidth: 360, gap: 16 },
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+      borderRadius: 14,
+      paddingVertical: 18,
+      paddingHorizontal: 22,
+    },
+    arrow: { color: c.accent, fontSize: 26, fontWeight: "800", marginRight: 16 },
+    menuText: { color: c.text, fontSize: 20, fontWeight: "600" },
+  });
 
 export default HomeScreen;

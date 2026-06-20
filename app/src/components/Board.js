@@ -359,7 +359,7 @@ const createStyles = (c) =>
     },
     cell: {
       borderWidth: 1,
-      borderColor: c.cardBorder,
+      borderColor: c.boardLine,
       backgroundColor: c.cellBg,
       alignItems: "center",
       justifyContent: "center",

@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { checkWinner } from "../utils/gameLogic";
 import { getBestMove } from "../utils/computerAI";
@@ -15,14 +16,17 @@ import socket from "../socket";
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 360);
+import { useLanguage } from "../context/LanguageContext";
 
 const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) => {
   const { user, updateUser } = useAuth();
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { t } = useLanguage();
+  const { width, height } = useWindowDimensions();
+
+  // Board fits the shorter screen side so it stays square after rotation
+  const boardWidth = Math.min(width - 32, height - 220, 360);
+  const styles = useMemo(() => createStyles(colors, boardWidth), [colors, boardWidth]);
 
   const [board, setBoard] = useState(Array(size * size).fill(null));
   const [isXNext, setIsXNext] = useState(true);
@@ -39,7 +43,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
   const chatScrollRef = useRef(null);
 
   const computerSymbol = starter === "computer" ? "X" : "O";
-  const cellSize = BOARD_WIDTH / size;
+  const cellSize = boardWidth / size;
 
   // Clears the board whenever the game settings change
   useEffect(() => {
@@ -78,7 +82,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
       setMessages((prev) => [...prev, data]);
     const handleOpponentLeft = () => {
       setOpponent(null);
-      setWinner("Opponent Fled 🏃💨");
+      setWinner("OPPONENT_LEFT");
     };
 
     socket.on("opponent_data", handleOpponentData);
@@ -188,7 +192,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
       });
       const data = await res.json();
       if (res.ok) {
-        setFriendMessage("Friend Added! 🎉");
+        setFriendMessage("Friend Added!");
         setIsAlreadyFriend(true);
         const nextFriends = [...(user.friends || []), opponent._id];
         updateUser({ friends: nextFriends });
@@ -209,12 +213,12 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
   };
 
   const getEndGameMessage = () => {
-    if (winner === "Draw") return "It's a Draw! 🤝";
-    if (winner === "Opponent Fled 🏃💨") return winner;
+    if (winner === "Draw") return t("draw");
+    if (winner === "OPPONENT_LEFT") return t("opponentFled");
     if (gameMode === "multiplayer" && myOnlineSymbol) {
-      return winner === myOnlineSymbol ? "You Won! 🎉" : "You Lost 💀";
+      return winner === myOnlineSymbol ? t("youWon") : t("youLost");
     }
-    return `Winner: ${winner} 🏆`;
+    return `${t("winner")}: ${winner}`;
   };
 
   const myUsername = user ? user.username : "Guest";
@@ -224,14 +228,14 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
       <View style={styles.matchInfo}>
         {gameMode === "multiplayer" && opponent ? (
           <Text style={styles.matchText}>
-            <Text style={{ color: colors.accent }}>You ({myOnlineSymbol})</Text>
-            {"  VS  "}
+            <Text style={{ color: colors.accent }}>{t("you")} ({myOnlineSymbol})</Text>
+            {`  ${t("vs")}  `}
             <Text style={{ color: colors.danger }}>
               {opponent.username} ({myOnlineSymbol === "X" ? "O" : "X"})
             </Text>
           </Text>
         ) : (
-          <Text style={styles.matchText}>Classic Tic Tac Toe</Text>
+          <Text style={styles.matchText}>{t("classic")}</Text>
         )}
       </View>
 
@@ -242,10 +246,14 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
             {gameMode === "multiplayer" && opponent && opponent._id && (
               <View style={{ marginTop: 8 }}>
                 {isAlreadyFriend ? (
-                  <Text style={styles.friendsLabel}>🤝 You are friends</Text>
+                  <View style={styles.friendsRow}>
+                    <Ionicons name="people" size={16} color={colors.success} />
+                    <Text style={styles.friendsLabel}>{t("areFriends")}</Text>
+                  </View>
                 ) : !friendMessage ? (
                   <TouchableOpacity style={styles.addFriendBtn} onPress={handleAddFriend}>
-                    <Text style={styles.addFriendText}>➕ Add {opponent.username}</Text>
+                    <Ionicons name="person-add" size={16} color="#fff" />
+                    <Text style={styles.addFriendText}>{t("add")} {opponent.username}</Text>
                   </TouchableOpacity>
                 ) : (
                   <Text style={styles.friendMsg}>{friendMessage}</Text>
@@ -255,12 +263,12 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
           </View>
         ) : (
           <Text style={styles.turn}>
-            Turn: <Text style={styles.turnIndicator}>{isXNext ? "X" : "O"}</Text>
+            {t("turn")} <Text style={styles.turnIndicator}>{isXNext ? "X" : "O"}</Text>
           </Text>
         )}
       </View>
 
-      <View style={[styles.board, { width: BOARD_WIDTH, height: BOARD_WIDTH }]}>
+      <View style={[styles.board, { width: boardWidth, height: boardWidth }]}>
         {board.map((cell, index) => (
           <TouchableOpacity
             key={index}
@@ -285,7 +293,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
 
       {(gameMode !== "multiplayer" || isHost) && (
         <TouchableOpacity style={styles.resetBtn} onPress={handleResetClick}>
-          <Text style={styles.resetText}>New Game</Text>
+          <Text style={styles.resetText}>{t("newGame")}</Text>
         </TouchableOpacity>
       )}
 
@@ -297,7 +305,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
             nestedScrollEnabled
           >
             {messages.length === 0 ? (
-              <Text style={styles.chatEmpty}>Start the conversation!</Text>
+              <Text style={styles.chatEmpty}>{t("startConversation")}</Text>
             ) : (
               messages.map((msg, idx) => {
                 const isMe = msg.sender === myUsername;
@@ -323,12 +331,12 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
               style={styles.chatInput}
               value={currentMessage}
               onChangeText={setCurrentMessage}
-              placeholder="Type a message..."
+              placeholder={t("typeMessage")}
               placeholderTextColor={colors.placeholder}
               onSubmitEditing={handleSendMessage}
             />
             <TouchableOpacity style={styles.sendBtn} onPress={handleSendMessage}>
-              <Text style={styles.sendText}>Send</Text>
+              <Text style={styles.sendText}>{t("send")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -337,7 +345,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
   );
 };
 
-const createStyles = (c) =>
+const createStyles = (c, boardWidth) =>
   StyleSheet.create({
     container: { alignItems: "center", marginTop: 10 },
     matchInfo: { marginBottom: 12 },
@@ -346,9 +354,18 @@ const createStyles = (c) =>
     turn: { color: c.textSecondary, fontSize: 18 },
     turnIndicator: { color: c.accent, fontWeight: "800", fontSize: 20 },
     winnerMsg: { color: c.text, fontSize: 22, fontWeight: "800" },
+    friendsRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     friendsLabel: { color: c.success, fontWeight: "700", fontSize: 15 },
     friendMsg: { color: c.accent, fontWeight: "700" },
-    addFriendBtn: { backgroundColor: c.success, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
+    addFriendBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: c.success,
+      borderRadius: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
     addFriendText: { color: "#fff", fontWeight: "700" },
     board: {
       flexDirection: "row",
@@ -374,7 +391,7 @@ const createStyles = (c) =>
     },
     resetText: { color: c.onAccent, fontWeight: "800", fontSize: 16 },
     chat: {
-      width: BOARD_WIDTH,
+      width: boardWidth,
       marginTop: 22,
       backgroundColor: c.card,
       borderRadius: 12,

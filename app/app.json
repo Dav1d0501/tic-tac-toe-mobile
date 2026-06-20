@@ -3,7 +3,7 @@
     "name": "ArenaX TicTacToe",
     "slug": "tic-tac-toe-rn",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "splash": {

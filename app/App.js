@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import { LanguageProvider } from "./src/context/LanguageContext";
 import AuthScreen from "./src/screens/AuthScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import LobbyScreen from "./src/screens/LobbyScreen";
@@ -51,12 +52,14 @@ function ThemedStatusBar() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <ThemedStatusBar />
-          <RootNavigator />
-        </NavigationContainer>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <ThemedStatusBar />
+            <RootNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

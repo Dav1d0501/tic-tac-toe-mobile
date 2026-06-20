@@ -11,15 +11,18 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const ProfileScreen = ({ navigation }) => {
   const { user, logout, updateUser } = useAuth();
   const { colors, mode, toggleTheme } = useTheme();
+  const { t, lang, toggleLanguage } = useLanguage();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [profile, setProfile] = useState(user);
@@ -85,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
     if (!result.canceled) {
       const dataUrl = `data:image/jpeg;base64,${result.assets[0].base64}`;
       const ok = await saveProfileField({ avatar: dataUrl });
-      if (ok) Alert.alert("Success", "Profile photo updated! 📸");
+      if (ok) Alert.alert("Success", "Profile photo updated!");
     }
   };
 
@@ -104,7 +107,7 @@ const ProfileScreen = ({ navigation }) => {
     if (!result.canceled) {
       const dataUrl = `data:image/jpeg;base64,${result.assets[0].base64}`;
       const ok = await saveProfileField({ avatar: dataUrl });
-      if (ok) Alert.alert("Success", "Profile photo updated! 🖼️");
+      if (ok) Alert.alert("Success", "Profile photo updated!");
     }
   };
 
@@ -136,7 +139,7 @@ const ProfileScreen = ({ navigation }) => {
     });
     if (ok) {
       setShowEditModal(false);
-      Alert.alert("Success", "Profile updated! ✅");
+      Alert.alert("Success", "Profile updated!");
     }
   };
 
@@ -172,9 +175,10 @@ const ProfileScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Ionicons name="arrow-back" size={18} color={colors.accent} />
+          <Text style={styles.backText}>{t("back")}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={styles.headerTitle}>{t("myProfile")}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -189,79 +193,90 @@ const ProfileScreen = ({ navigation }) => {
               </View>
             )}
             <View style={styles.cameraBadge}>
-              <Text style={{ fontSize: 16 }}>📷</Text>
+              <Ionicons name="camera" size={18} color={colors.text} />
             </View>
           </TouchableOpacity>
           <Text style={styles.username}>{profile?.username || "Guest"}</Text>
           <Text style={styles.email}>{profile?.email || ""}</Text>
           <TouchableOpacity onPress={changePhoto}>
-            <Text style={styles.changePhoto}>Change Photo</Text>
+            <Text style={styles.changePhoto}>{t("changePhoto")}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: colors.success }]}>{wins}</Text>
-            <Text style={styles.statLabel}>Wins</Text>
+            <Text style={styles.statLabel}>{t("wins")}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: colors.dangerText }]}>{losses}</Text>
-            <Text style={styles.statLabel}>Losses</Text>
+            <Text style={styles.statLabel}>{t("losses")}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: colors.accent }]}>{winRate}%</Text>
-            <Text style={styles.statLabel}>Win Rate</Text>
+            <Text style={styles.statLabel}>{t("winRate")}</Text>
           </View>
         </View>
 
         <TouchableOpacity style={styles.themeBtn} onPress={toggleTheme}>
+          <Ionicons name={mode === "dark" ? "sunny" : "moon"} size={18} color={colors.text} />
           <Text style={styles.themeBtnText}>
-            {mode === "dark" ? "☀️  Switch to Light Mode" : "🌙  Switch to Dark Mode"}
+            {mode === "dark" ? t("switchLight") : t("switchDark")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.themeBtn} onPress={toggleLanguage}>
+          <Ionicons name="language" size={18} color={colors.text} />
+          <Text style={styles.themeBtnText}>
+            {lang === "en" ? "עברית" : "English"}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.editBtn} onPress={openEditModal}>
-          <Text style={styles.editBtnText}>✏️ Edit Profile</Text>
+          <Ionicons name="create-outline" size={18} color={colors.onAccent} />
+          <Text style={styles.editBtnText}>{t("editProfile")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-          <Text style={styles.logoutText}>🚪 Logout</Text>
+          <Ionicons name="log-out-outline" size={18} color={colors.text} />
+          <Text style={styles.logoutText}>{t("logout")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.deleteBtn} onPress={() => setShowDeleteModal(true)}>
-          <Text style={styles.deleteText}>🗑️ Delete Account</Text>
+          <Ionicons name="trash-outline" size={18} color={colors.dangerText} />
+          <Text style={styles.deleteText}>{t("deleteAccount")}</Text>
         </TouchableOpacity>
       </ScrollView>
 
       <Modal visible={showEditModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-            <Text style={styles.label}>Username</Text>
+            <Text style={styles.modalTitle}>{t("editProfile")}</Text>
+            <Text style={styles.label}>{t("username")}</Text>
             <TextInput
               style={styles.input}
               value={editUsername}
               onChangeText={setEditUsername}
-              placeholder="Username"
+              placeholder={t("username")}
               placeholderTextColor={colors.placeholder}
               autoCapitalize="none"
             />
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t("email")}</Text>
             <TextInput
               style={styles.input}
               value={editEmail}
               onChangeText={setEditEmail}
-              placeholder="Email"
+              placeholder={t("email")}
               placeholderTextColor={colors.placeholder}
               autoCapitalize="none"
               keyboardType="email-address"
             />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => setShowEditModal(false)}>
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.primaryBtn} onPress={handleSaveProfile}>
-                <Text style={styles.primaryBtnText}>Save</Text>
+                <Text style={styles.primaryBtnText}>{t("save")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -271,13 +286,13 @@ const ProfileScreen = ({ navigation }) => {
       <Modal visible={showDeleteModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={[styles.modalTitle, { color: colors.danger }]}>⚠️ Danger Zone</Text>
-            <Text style={styles.warnText}>Are you sure you want to delete your account?</Text>
+            <Text style={[styles.modalTitle, { color: colors.danger }]}>{t("dangerZone")}</Text>
+            <Text style={styles.warnText}>{t("deleteConfirmText")}</Text>
             <TextInput
               style={[styles.input, { textAlign: "center" }]}
               value={deleteConfirmation}
               onChangeText={setDeleteConfirmation}
-              placeholder="Type DELETE"
+              placeholder={t("typeDelete")}
               placeholderTextColor={colors.placeholder}
               autoCapitalize="characters"
             />
@@ -289,7 +304,7 @@ const ProfileScreen = ({ navigation }) => {
                   setDeleteConfirmation("");
                 }}
               >
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 disabled={deleteConfirmation !== "DELETE"}
@@ -299,7 +314,7 @@ const ProfileScreen = ({ navigation }) => {
                 ]}
                 onPress={handleDeleteAccount}
               >
-                <Text style={styles.primaryBtnText}>Confirm</Text>
+                <Text style={styles.primaryBtnText}>{t("confirm")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -319,7 +334,7 @@ const createStyles = (c) =>
       paddingHorizontal: 16,
       paddingVertical: 12,
     },
-    backBtn: { width: 60 },
+    backBtn: { width: 70, flexDirection: "row", alignItems: "center", gap: 4 },
     backText: { color: c.accent, fontWeight: "600", fontSize: 15 },
     headerTitle: { color: c.text, fontSize: 20, fontWeight: "700" },
     avatarCard: { alignItems: "center", marginTop: 10 },
@@ -361,30 +376,47 @@ const createStyles = (c) =>
     statValue: { fontSize: 26, fontWeight: "900" },
     statLabel: { color: c.textMuted, marginTop: 4, fontSize: 13 },
     themeBtn: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
       backgroundColor: c.card,
       borderRadius: 12,
       paddingVertical: 14,
-      alignItems: "center",
       borderWidth: 1,
       borderColor: c.cardBorder,
     },
     themeBtnText: { color: c.text, fontWeight: "700", fontSize: 16 },
-    editBtn: { backgroundColor: c.accent, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+    editBtn: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: c.accent,
+      borderRadius: 12,
+      paddingVertical: 14,
+    },
     editBtnText: { color: c.onAccent, fontWeight: "800", fontSize: 16 },
     logoutBtn: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
       backgroundColor: c.subtle,
       borderRadius: 12,
       paddingVertical: 14,
-      alignItems: "center",
     },
     logoutText: { color: c.text, fontWeight: "700", fontSize: 16 },
     deleteBtn: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
       backgroundColor: c.subtle,
       borderColor: c.danger,
       borderWidth: 1,
       borderRadius: 12,
       paddingVertical: 14,
-      alignItems: "center",
     },
     deleteText: { color: c.dangerText, fontWeight: "700", fontSize: 16 },
     label: { color: c.textSecondary, fontSize: 13, marginBottom: 6, marginTop: 4 },

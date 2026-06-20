@@ -10,10 +10,12 @@ import {
   Platform,
   Animated,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const Character = ({ color, width, height, radius, blink }) => (
   <View
@@ -69,6 +71,7 @@ const Mascot = () => {
 const AuthScreen = () => {
   const { login } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const dynamic = useMemo(() => createStyles(colors), [colors]);
 
   const [isLogin, setIsLogin] = useState(true);
@@ -138,15 +141,15 @@ const AuthScreen = () => {
         <Mascot />
 
         <View style={dynamic.formCard}>
-          <Text style={dynamic.title}>{isLogin ? "Welcome back!" : "Create Account"}</Text>
+          <Text style={dynamic.title}>{isLogin ? t("welcomeBack") : t("createAccount")}</Text>
           <Text style={dynamic.subtitle}>
-            {isLogin ? "Please enter your details" : "Join the arena today"}
+            {isLogin ? t("enterDetails") : t("joinArena")}
           </Text>
 
-          <Text style={dynamic.label}>Username</Text>
+          <Text style={dynamic.label}>{t("username")}</Text>
           <TextInput
             style={dynamic.input}
-            placeholder="Player Name"
+            placeholder={t("playerName")}
             placeholderTextColor={colors.placeholder}
             value={username}
             onChangeText={setUsername}
@@ -155,7 +158,7 @@ const AuthScreen = () => {
 
           {!isLogin && (
             <>
-              <Text style={dynamic.label}>Email</Text>
+              <Text style={dynamic.label}>{t("email")}</Text>
               <TextInput
                 style={dynamic.input}
                 placeholder="name@example.com"
@@ -168,7 +171,7 @@ const AuthScreen = () => {
             </>
           )}
 
-          <Text style={dynamic.label}>Password</Text>
+          <Text style={dynamic.label}>{t("password")}</Text>
           <View style={styles.passwordRow}>
             <TextInput
               style={[dynamic.input, { flex: 1, marginBottom: 0 }]}
@@ -183,13 +186,17 @@ const AuthScreen = () => {
               style={styles.eyeToggle}
               onPress={() => setShowPassword((s) => !s)}
             >
-              <Text style={{ color: colors.textMuted }}>{showPassword ? "🙈" : "👁️"}</Text>
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color={colors.textMuted}
+              />
             </TouchableOpacity>
           </View>
 
           {!isLogin && (
             <Text style={dynamic.hint}>
-              Needs: 8+ chars, 1 Uppercase, 1 Number, 1 Special character
+              {t("passwordHint")}
             </Text>
           )}
 
@@ -200,7 +207,7 @@ const AuthScreen = () => {
           )}
 
           <TouchableOpacity style={dynamic.submitBtn} onPress={handleSubmit}>
-            <Text style={dynamic.submitText}>{isLogin ? "Log in" : "Register"}</Text>
+            <Text style={dynamic.submitText}>{isLogin ? t("login") : t("register")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -211,8 +218,8 @@ const AuthScreen = () => {
             }}
           >
             <Text style={dynamic.toggleText}>
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <Text style={dynamic.toggleLink}>{isLogin ? "Sign Up" : "Login"}</Text>
+              {isLogin ? t("noAccount") : t("haveAccount")}
+              <Text style={dynamic.toggleLink}>{isLogin ? t("signUp") : t("loginLink")}</Text>
             </Text>
           </TouchableOpacity>
         </View>

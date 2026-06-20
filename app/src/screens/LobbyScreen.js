@@ -9,17 +9,19 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Slider from "@react-native-community/slider";
 
 import socket from "../socket";
 import { SERVER_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-
-const SIZES = [3, 5, 10];
+import { useLanguage } from "../context/LanguageContext";
 
 const LobbyScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [roomName, setRoomName] = useState("");
@@ -27,6 +29,12 @@ const LobbyScreen = ({ navigation }) => {
   const [availableRooms, setAvailableRooms] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [friends, setFriends] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Rooms whose name matches the search text
+  const filteredRooms = availableRooms.filter((room) =>
+    room.id.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
 
   // Remembers the room we are entering until the server confirms the join
   const pendingRoomRef = useRef("");
@@ -91,7 +99,7 @@ const LobbyScreen = ({ navigation }) => {
 
   const handleCreate = () => {
     if (!roomName || roomName.trim() === "") {
-      return Alert.alert("Missing name", "Please enter a room name! 📝");
+      return Alert.alert("Missing name", "Please enter a room name!");
     }
     if (!user) return Alert.alert("Login required", "Please log in to create a room!");
 
@@ -110,63 +118,96 @@ const LobbyScreen = ({ navigation }) => {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.backBtn}>
-            <Text style={styles.backText}>⬅ Menu</Text>
+            <Ionicons name="arrow-back" size={16} color={colors.text} />
+            <Text style={styles.backText}>{t("menu")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Arena 🌍</Text>
+          <View style={styles.titleRow}>
+            <Ionicons name="globe-outline" size={20} color={colors.text} />
+            <Text style={styles.headerTitle}>{t("arena")}</Text>
+          </View>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={styles.smallBtn}>
-            <Text style={styles.smallBtnText}>👤 Profile</Text>
+            <Ionicons name="person-circle-outline" size={16} color={colors.text} />
+            <Text style={styles.smallBtnText}>{t("profile")}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={logout} style={styles.smallBtn}>
-            <Text style={styles.smallBtnText}>Logout 🚪</Text>
+            <Ionicons name="log-out-outline" size={16} color={colors.text} />
+            <Text style={styles.smallBtnText}>{t("logout")}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {leaderboard.length > 0 && (
         <View style={styles.champion}>
+          <Ionicons name="trophy" size={16} color={colors.gold} />
           <Text style={styles.championText}>
-            👑 Champion: <Text style={styles.championName}>{leaderboard[0].username}</Text> (
-            {leaderboard[0].wins} Wins)
+            {t("champion")} <Text style={styles.championName}>{leaderboard[0].username}</Text> (
+            {leaderboard[0].wins} {t("wins")})
           </Text>
         </View>
       )}
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>🎮 Create Room</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="game-controller" size={18} color={colors.text} />
+            <Text style={styles.cardTitle}>{t("createRoom")}</Text>
+          </View>
           <TextInput
             style={styles.input}
-            placeholder="Room Name..."
+            placeholder={t("roomName")}
             placeholderTextColor={colors.placeholder}
             value={roomName}
             onChangeText={setRoomName}
           />
-          <View style={styles.sizeRow}>
-            {SIZES.map((s) => (
-              <TouchableOpacity
-                key={s}
-                onPress={() => setSize(s)}
-                style={[styles.sizeBtn, size === s && styles.sizeBtnActive]}
-              >
-                <Text style={[styles.sizeBtnText, size === s && styles.sizeBtnTextActive]}>
-                  {s}x{s}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.sliderLabel}>
+            {t("boardSize")} <Text style={styles.sliderValue}>{size}x{size}</Text>
+          </Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={3}
+            maximumValue={10}
+            step={1}
+            value={size}
+            onValueChange={setSize}
+            minimumTrackTintColor={colors.accent}
+            maximumTrackTintColor={colors.inputBorder}
+            thumbTintColor={colors.accent}
+          />
           <TouchableOpacity style={styles.actionBtn} onPress={handleCreate}>
-            <Text style={styles.actionBtnText}>Create & Play</Text>
+            <Text style={styles.actionBtnText}>{t("createPlay")}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>🚀 Available Rooms</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="rocket" size={18} color={colors.text} />
+            <Text style={styles.cardTitle}>{t("availableRooms")}</Text>
+          </View>
+
+          <View style={styles.searchRow}>
+            <Ionicons name="search" size={18} color={colors.placeholder} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t("searchRooms")}
+              placeholderTextColor={colors.placeholder}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery("")}>
+                <Ionicons name="close-circle" size={18} color={colors.placeholder} />
+              </TouchableOpacity>
+            )}
+          </View>
+
           {availableRooms.length === 0 ? (
-            <Text style={styles.empty}>No active rooms. Be the first!</Text>
+            <Text style={styles.empty}>{t("noRooms")}</Text>
+          ) : filteredRooms.length === 0 ? (
+            <Text style={styles.empty}>{t("noMatch")}</Text>
           ) : (
-            availableRooms.map((room) => (
+            filteredRooms.map((room) => (
               <View key={room.id} style={styles.roomItem}>
                 <View>
                   <Text style={styles.roomName}>{room.id}</Text>
@@ -180,7 +221,7 @@ const LobbyScreen = ({ navigation }) => {
                   style={[styles.joinBtn, room.playersCount >= 2 && styles.joinBtnDisabled]}
                 >
                   <Text style={styles.joinBtnText}>
-                    {room.playersCount >= 2 ? "FULL" : "JOIN"}
+                    {room.playersCount >= 2 ? t("full") : t("join")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -189,17 +230,27 @@ const LobbyScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>👥 Friends</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="people" size={18} color={colors.text} />
+            <Text style={styles.cardTitle}>{t("friends")}</Text>
+          </View>
           {friends.length === 0 ? (
-            <Text style={styles.empty}>You have no friends yet. Play a game to add some!</Text>
+            <Text style={styles.empty}>{t("noFriends")}</Text>
           ) : (
             friends.map((friend) => (
               <View key={friend._id} style={styles.friendItem}>
                 <View style={styles.friendInfo}>
-                  <Text style={{ color: friend.isOnline ? colors.success : colors.textMuted }}>●</Text>
+                  <Ionicons
+                    name="ellipse"
+                    size={10}
+                    color={friend.isOnline ? colors.success : colors.textMuted}
+                  />
                   <Text style={styles.friendName}>{friend.username}</Text>
                 </View>
-                <Text style={styles.friendWins}>🏆 {friend.wins}</Text>
+                <View style={styles.friendWinsRow}>
+                  <Ionicons name="trophy" size={14} color={colors.gold} />
+                  <Text style={styles.friendWins}>{friend.wins}</Text>
+                </View>
               </View>
             ))
           )}
@@ -220,7 +271,11 @@ const createStyles = (c) =>
       paddingVertical: 10,
     },
     headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+    titleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     backBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
       backgroundColor: c.subtle,
       borderRadius: 8,
       paddingHorizontal: 10,
@@ -230,6 +285,9 @@ const createStyles = (c) =>
     headerTitle: { color: c.text, fontSize: 20, fontWeight: "700" },
     headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
     smallBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
       backgroundColor: c.subtle,
       borderRadius: 8,
       paddingHorizontal: 10,
@@ -237,6 +295,10 @@ const createStyles = (c) =>
     },
     smallBtnText: { color: c.text, fontWeight: "600" },
     champion: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
       backgroundColor: c.card,
       paddingVertical: 8,
       paddingHorizontal: 16,
@@ -252,7 +314,8 @@ const createStyles = (c) =>
       borderWidth: 1,
       borderColor: c.cardBorder,
     },
-    cardTitle: { color: c.text, fontSize: 18, fontWeight: "700", marginBottom: 12 },
+    cardTitleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+    cardTitle: { color: c.text, fontSize: 18, fontWeight: "700" },
     input: {
       backgroundColor: c.inputBg,
       borderRadius: 10,
@@ -263,17 +326,21 @@ const createStyles = (c) =>
       borderWidth: 1,
       borderColor: c.inputBorder,
     },
-    sizeRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-    sizeBtn: {
-      flex: 1,
-      paddingVertical: 10,
-      borderRadius: 8,
-      backgroundColor: c.subtle,
+    sliderLabel: { color: c.textSecondary, fontWeight: "600", marginBottom: 2 },
+    sliderValue: { color: c.accent, fontWeight: "800" },
+    slider: { width: "100%", height: 40, marginBottom: 8 },
+    searchRow: {
+      flexDirection: "row",
       alignItems: "center",
+      gap: 8,
+      backgroundColor: c.inputBg,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
     },
-    sizeBtnActive: { backgroundColor: c.accent },
-    sizeBtnText: { color: c.textSecondary, fontWeight: "600" },
-    sizeBtnTextActive: { color: c.onAccent, fontWeight: "800" },
+    searchInput: { flex: 1, paddingVertical: 10, color: c.text },
     actionBtn: { backgroundColor: c.accent, borderRadius: 10, paddingVertical: 12, alignItems: "center" },
     actionBtnText: { color: c.onAccent, fontWeight: "800", fontSize: 16 },
     empty: { color: c.placeholder, fontStyle: "italic" },
@@ -300,6 +367,7 @@ const createStyles = (c) =>
     },
     friendInfo: { flexDirection: "row", alignItems: "center", gap: 8 },
     friendName: { color: c.text, fontSize: 15 },
+    friendWinsRow: { flexDirection: "row", alignItems: "center", gap: 4 },
     friendWins: { color: c.gold, fontWeight: "600" },
   });
 

@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import socket from "../socket";
 import Board from "../components/Board";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const GameScreen = ({ route, navigation }) => {
   const { mode, room, size: onlineSize, isHost: initialIsHost, role } = route.params || {};
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [isHost, setIsHost] = useState(initialIsHost || false);
@@ -47,9 +50,9 @@ const GameScreen = ({ route, navigation }) => {
   };
 
   const getTitle = () => {
-    if (mode === "computer") return "Man vs Machine";
-    if (mode === "multiplayer") return `Room: ${room}`;
-    return "Local Game (1 Phone)";
+    if (mode === "computer") return t("manVsMachine");
+    if (mode === "multiplayer") return `${t("room")}: ${room}`;
+    return t("localGame");
   };
 
   const SizeButton = ({ value }) => (
@@ -68,8 +71,9 @@ const GameScreen = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={18} color={colors.accent} />
             <Text style={styles.backText}>
-              ← Back to {mode === "multiplayer" ? "Lobby" : "Menu"}
+              {mode === "multiplayer" ? t("backToLobby") : t("backToMenu")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -78,7 +82,7 @@ const GameScreen = ({ route, navigation }) => {
 
         {mode !== "multiplayer" && (
           <View style={styles.controlsGroup}>
-            <Text style={styles.controlLabel}>Board Size:</Text>
+            <Text style={styles.controlLabel}>{t("boardSize")}</Text>
             <View style={styles.controlRow}>
               <SizeButton value={3} />
               <SizeButton value={5} />
@@ -91,14 +95,14 @@ const GameScreen = ({ route, navigation }) => {
           <>
             {currentSize === 3 && (
               <View style={styles.controlsGroup}>
-                <Text style={styles.controlLabel}>Difficulty:</Text>
+                <Text style={styles.controlLabel}>{t("difficulty")}</Text>
                 <View style={styles.controlRow}>
                   <TouchableOpacity
                     onPress={() => setDifficulty("easy")}
                     style={[styles.ctrlBtn, difficulty === "easy" && styles.ctrlBtnActive]}
                   >
                     <Text style={[styles.ctrlBtnText, difficulty === "easy" && styles.ctrlBtnTextActive]}>
-                      Easy
+                      {t("easy")}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -106,21 +110,21 @@ const GameScreen = ({ route, navigation }) => {
                     style={[styles.ctrlBtn, difficulty === "hard" && styles.ctrlBtnActive]}
                   >
                     <Text style={[styles.ctrlBtnText, difficulty === "hard" && styles.ctrlBtnTextActive]}>
-                      Hard
+                      {t("hard")}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
             <View style={styles.controlsGroup}>
-              <Text style={styles.controlLabel}>First Turn:</Text>
+              <Text style={styles.controlLabel}>{t("firstTurn")}</Text>
               <View style={styles.controlRow}>
                 <TouchableOpacity
                   onPress={() => setStarter("user")}
                   style={[styles.ctrlBtn, starter === "user" && styles.ctrlBtnActive]}
                 >
                   <Text style={[styles.ctrlBtnText, starter === "user" && styles.ctrlBtnTextActive]}>
-                    Me (X)
+                    {t("meX")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -128,7 +132,7 @@ const GameScreen = ({ route, navigation }) => {
                   style={[styles.ctrlBtn, starter === "computer" && styles.ctrlBtnActive]}
                 >
                   <Text style={[styles.ctrlBtnText, starter === "computer" && styles.ctrlBtnTextActive]}>
-                    PC (X)
+                    {t("pcX")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -155,7 +159,7 @@ const createStyles = (c) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: c.bg },
     headerTop: { marginBottom: 10 },
-    backBtn: { alignSelf: "flex-start" },
+    backBtn: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 4 },
     backText: { color: c.accent, fontWeight: "600", fontSize: 15 },
     title: { color: c.text, fontSize: 26, fontWeight: "800", textAlign: "center", marginBottom: 16 },
     controlsGroup: { marginBottom: 14, alignItems: "center" },

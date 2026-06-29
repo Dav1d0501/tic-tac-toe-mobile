@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const THEME_KEY = "app_theme";
 
-// Color palettes for the two themes, using the same keys
+// Color palettes for both themes, sharing the same keys
 const palettes = {
   dark: {
     bg: "#0f0c29",
@@ -60,7 +60,7 @@ const ThemeContext = createContext(null);
 export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState("dark");
 
-  // Load the saved theme once when the app starts
+  // Loads the saved theme on startup
   useEffect(() => {
     (async () => {
       const saved = await AsyncStorage.getItem(THEME_KEY);
@@ -68,7 +68,7 @@ export const ThemeProvider = ({ children }) => {
     })();
   }, []);
 
-  // Switch between dark and light and remember the choice
+  // Toggles dark and light, then saves the choice
   const toggleTheme = async () => {
     const next = mode === "dark" ? "light" : "dark";
     setMode(next);

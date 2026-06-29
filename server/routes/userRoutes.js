@@ -13,6 +13,7 @@ const {
     updateProfile
 } = require('../controllers/userController');
 
+// User API routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/google-login', googleLogin);

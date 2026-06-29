@@ -1,9 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Saves and loads the logged in user on the device
+// Stores the logged in user on the device
 
 const USER_KEY = "user";
 
+// Saves the user to local storage
 export const saveUser = async (user) => {
   try {
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -12,6 +13,7 @@ export const saveUser = async (user) => {
   }
 };
 
+// Reads the saved user from local storage
 export const getUser = async () => {
   try {
     const raw = await AsyncStorage.getItem(USER_KEY);
@@ -22,6 +24,7 @@ export const getUser = async () => {
   }
 };
 
+// Clears the saved user from local storage
 export const removeUser = async () => {
   try {
     await AsyncStorage.removeItem(USER_KEY);

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// User account schema
 const userSchema = mongoose.Schema({
   username: {
     type: String,
@@ -13,10 +14,10 @@ const userSchema = mongoose.Schema({
   },
   password: {
     type: String,
-    required: false, // חייב להיות false כדי לאפשר התחברות עם גוגל
+    required: false, // Optional so Google users can sign in without a password
   },
   googleId: {
-    type: String, // שדה לזיהוי משתמשי גוגל
+    type: String, // Identifies Google users
   },
   avatar: {
     type: String,
@@ -36,7 +37,7 @@ const userSchema = mongoose.Schema({
   }],
   isOnline: {
     type: Boolean,
-    default: false // ברירת מחדל: לא מחובר
+    default: false // Defaults to offline
   }
 }, {
   timestamps: true

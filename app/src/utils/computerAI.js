@@ -59,7 +59,7 @@ const minimax = (board, depth, isMaximizing, size) => {
   }
 };
 
-// Simple rules for big boards, win then block then center then random
+// Rule based move for big boards, win, block, center, then random
 const getHeuristicMove = (board, size) => {
   const availableMoves = getAvailableMoves(board);
   if (availableMoves.length === 0) return null;
@@ -83,6 +83,7 @@ const getHeuristicMove = (board, size) => {
   return availableMoves[randomIndex];
 };
 
+// Returns the indexes of empty cells
 const getAvailableMoves = (board) => {
   return board
     .map((val, idx) => (val === null ? idx : null))

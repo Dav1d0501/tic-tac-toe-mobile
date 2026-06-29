@@ -34,7 +34,7 @@ const ProfileScreen = ({ navigation }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
-  // Loads the latest profile from the server so stats are up to date
+  // Loads the latest profile from the server
   const fetchProfile = async () => {
     if (!user) return;
     try {
@@ -50,7 +50,7 @@ const ProfileScreen = ({ navigation }) => {
     fetchProfile();
   }, []);
 
-  // Sends a field change to the server and updates the saved user
+  // Saves a profile field to the server and updates local state
   const saveProfileField = async (patch) => {
     try {
       const res = await fetch(`${SERVER_URL}/api/users/update-profile`, {
@@ -73,7 +73,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  // Opens the camera, then saves the photo as the avatar
+  // Takes a photo and saves it as the avatar
   const takePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
@@ -92,7 +92,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  // Opens the photo gallery, then saves the chosen image as the avatar
+  // Picks a gallery image and saves it as the avatar
   const pickFromGallery = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
@@ -111,7 +111,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  // Lets the user choose where the photo comes from
+  // Asks the user for a photo source
   const changePhoto = () => {
     Alert.alert("Change Photo", "Choose a source", [
       { text: "Take Photo", onPress: takePhoto },
@@ -126,7 +126,7 @@ const ProfileScreen = ({ navigation }) => {
     setShowEditModal(true);
   };
 
-  // Saves the edited username and email
+  // Validates and saves the edited username and email
   const handleSaveProfile = async () => {
     if (!editUsername.trim()) return Alert.alert("Invalid", "Username cannot be empty");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -143,7 +143,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  // Permanently deletes the account after the user types DELETE
+  // Deletes the account once the user types DELETE
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE") return;
     try {

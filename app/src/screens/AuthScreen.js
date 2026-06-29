@@ -81,13 +81,14 @@ const AuthScreen = () => {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const show = (text, error = true) => {
     setMessage(text);
     setIsError(error);
   };
 
-  // Validates the form then logs in or registers against the server
+  // Validates the form, then logs in or registers
   const handleSubmit = async () => {
     setMessage("");
 
@@ -111,11 +112,17 @@ const AuthScreen = () => {
       ? { username, password }
       : { username, email, password };
 
+    // Aborts the request if the server does not answer in time
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
+    setSubmitting(true);
     try {
       const response = await fetch(`${SERVER_URL}/api/users/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -127,7 +134,14 @@ const AuthScreen = () => {
       }
     } catch (error) {
       console.error("Auth Error:", error);
-      show("Server error. Check the SERVER_URL in src/config.js");
+      if (error.name === "AbortError") {
+        show(`Could not reach server at ${SERVER_URL} (timed out)`);
+      } else {
+        show(`Network error: ${error.message}, trying ${SERVER_URL}`);
+      }
+    } finally {
+      clearTimeout(timer);
+      setSubmitting(false);
     }
   };
 
@@ -206,8 +220,14 @@ const AuthScreen = () => {
             </Text>
           )}
 
-          <TouchableOpacity style={dynamic.submitBtn} onPress={handleSubmit}>
-            <Text style={dynamic.submitText}>{isLogin ? t("login") : t("register")}</Text>
+          <TouchableOpacity
+            style={[dynamic.submitBtn, submitting && { opacity: 0.6 }]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            <Text style={dynamic.submitText}>
+              {submitting ? "Please wait…" : isLogin ? t("login") : t("register")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -228,7 +248,7 @@ const AuthScreen = () => {
   );
 };
 
-// Layout that does not depend on the theme
+// Static styles, not theme based
 const styles = StyleSheet.create({
   scroll: { flexGrow: 1, justifyContent: "center", padding: 24 },
   mascotRow: {

@@ -2,14 +2,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { getUser, saveUser, removeUser } from "../storage";
 import socket from "../socket";
 
-// Holds the logged in user and shares it with every screen
+// Holds the logged in user and shares it across screens
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load the saved user once when the app starts
+  // Loads the saved user on startup
   useEffect(() => {
     (async () => {
       const stored = await getUser();
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     })();
   }, []);
 
-  // Tell the server this user is online whenever the socket connects
+  // Announces the user online whenever the socket connects
   useEffect(() => {
     const announce = () => {
       if (user && user._id) socket.emit("user_connected", user._id);
@@ -28,14 +28,14 @@ export const AuthProvider = ({ children }) => {
     return () => socket.off("connect", announce);
   }, [user]);
 
-  // Save the user after a successful login or register
+  // Saves the user after login or register
   const login = async (userData) => {
     await saveUser(userData);
     setUser(userData);
     if (userData && userData._id) socket.emit("user_connected", userData._id);
   };
 
-  // Change some user fields without logging in again
+  // Updates some user fields without re-login
   const updateUser = async (patch) => {
     const next = { ...(user || {}), ...patch };
     await saveUser(next);

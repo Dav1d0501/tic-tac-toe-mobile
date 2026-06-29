@@ -24,7 +24,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
   const { t } = useLanguage();
   const { width, height } = useWindowDimensions();
 
-  // Board fits the shorter screen side so it stays square after rotation
+  // Sizes the board to the shorter screen side so it stays square
   const boardWidth = Math.min(width - 32, height - 220, 360);
   const styles = useMemo(() => createStyles(colors, boardWidth), [colors, boardWidth]);
 
@@ -58,7 +58,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     setFriendMessage("");
   };
 
-  // Checks if the opponent is already a friend once we know who they are
+  // Checks if the opponent is already a friend
   useEffect(() => {
     if (opponent && opponent._id && user && user._id) {
       fetch(`${SERVER_URL}/api/users/friends/${user._id}`)
@@ -72,7 +72,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     }
   }, [opponent]);
 
-  // Listens for opponent info, chat messages, resets and the opponent leaving
+  // Listens for opponent data, chat, resets, and opponent leaving
   useEffect(() => {
     if (gameMode !== "multiplayer") return;
 
@@ -104,7 +104,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     chatScrollRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  // Applies a move that came from the other player
+  // Applies a move received from the other player
   useEffect(() => {
     if (gameMode !== "multiplayer") return;
 
@@ -117,7 +117,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     return () => socket.off("receive_move", handleReceiveMove);
   }, [gameMode, board, isXNext, winner]);
 
-  // Lets the computer play when it is its turn
+  // Runs the computer move on its turn
   useEffect(() => {
     const isComputerTurn =
       (isXNext && computerSymbol === "X") || (!isXNext && computerSymbol === "O");
@@ -131,14 +131,14 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     }
   }, [isXNext, winner, gameMode, board, size, difficulty, computerSymbol]);
 
-  // The host reports the result so the server can update the scores
+  // Host reports the result so the server updates scores
   useEffect(() => {
     if (winner && gameMode === "multiplayer" && isHost) {
       socket.emit("game_over", { room, winnerSymbol: winner });
     }
   }, [winner, gameMode, room, isHost]);
 
-  // Places a symbol, checks for a winner and sends the move when online
+  // Places a symbol, checks the winner, sends the move when online
   const handleMove = (index, emitEvent = true) => {
     const newBoard = [...board];
     if (newBoard[index] || winner) return;
@@ -155,7 +155,7 @@ const Board = ({ size, gameMode, difficulty, starter, room, isHost, myRole }) =>
     }
   };
 
-  // Handles a tap on a cell and blocks taps that are not allowed
+  // Handles a cell tap and blocks illegal taps
   const handleCellClick = (index) => {
     if (board[index] || winner) return;
     const isComputerTurn =

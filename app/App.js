@@ -14,7 +14,7 @@ import ProfileScreen from "./src/screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
-// Shows the game screens when logged in and the auth screen when not
+// Shows game screens when logged in, the auth screen otherwise
 function RootNavigator() {
   const { user, loading } = useAuth();
   const { colors } = useTheme();
@@ -43,7 +43,7 @@ function RootNavigator() {
   );
 }
 
-// Sets the status bar icons to match the current theme
+// Matches the status bar icons to the theme
 function ThemedStatusBar() {
   const { mode } = useTheme();
   return <StatusBar style={mode === "dark" ? "light" : "dark"} />;

@@ -31,12 +31,12 @@ const LobbyScreen = ({ navigation }) => {
   const [friends, setFriends] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Rooms whose name matches the search text
+  // Rooms matching the search text
   const filteredRooms = availableRooms.filter((room) =>
     room.id.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
 
-  // Remembers the room we are entering until the server confirms the join
+  // Holds the room we are joining until the server confirms
   const pendingRoomRef = useRef("");
 
   const fetchLeaderboard = async () => {
@@ -57,7 +57,7 @@ const LobbyScreen = ({ navigation }) => {
     }
   };
 
-  // Loads leaderboard and friends now and refreshes them every ten seconds
+  // Loads leaderboard and friends, then refreshes every ten seconds
   useEffect(() => {
     if (user) fetchFriends(user._id);
     fetchLeaderboard();
@@ -70,7 +70,7 @@ const LobbyScreen = ({ navigation }) => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Listens for the room list and for confirmation that we joined a room
+  // Listens for room updates and join confirmation
   useEffect(() => {
     socket.emit("get_rooms");
 

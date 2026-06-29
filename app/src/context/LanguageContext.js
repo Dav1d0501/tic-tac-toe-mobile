@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LANG_KEY = "app_lang";
 
-// All UI text in both languages, looked up by key
+// UI text for both languages, keyed by string id
 const translations = {
   en: {
     welcome: "Welcome,",
@@ -182,7 +182,7 @@ const LanguageContext = createContext(null);
 export const LanguageProvider = ({ children }) => {
   const [lang, setLang] = useState("en");
 
-  // Load the saved language once when the app starts
+  // Loads the saved language on startup
   useEffect(() => {
     (async () => {
       const saved = await AsyncStorage.getItem(LANG_KEY);
@@ -190,7 +190,7 @@ export const LanguageProvider = ({ children }) => {
     })();
   }, []);
 
-  // Switch between English and Hebrew and remember the choice
+  // Toggles English and Hebrew, then saves the choice
   const toggleLanguage = async () => {
     const next = lang === "en" ? "he" : "en";
     setLang(next);

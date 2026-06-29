@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-// Register
+// Creates a new user account
 exports.registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -18,7 +18,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// Login
+// Logs in with username and password
 exports.loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -41,7 +41,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// Google Login
+// Logs in or signs up with Google
 exports.googleLogin = async (req, res) => {
   try {
     const { email, username, googleId } = req.body;
@@ -69,9 +69,7 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-// --- פונקציות חדשות (היו חסרות או לא מחוברות) ---
-
-// 1. Leaderboard
+// Returns the top players by wins
 exports.getLeaderboard = async (req, res) => {
     try {
         const leaderboard = await User.find({}, 'username wins losses isOnline')
@@ -83,20 +81,20 @@ exports.getLeaderboard = async (req, res) => {
     }
 };
 
-// 2. Add Friend
+// Adds each user to the other's friend list
 exports.addFriend = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
         if (!userId || !friendId) return res.status(400).json({ message: "Missing User IDs" });
 
-        // עדכון צד א' (אני): הוסף את החבר רק אם הוא לא קיים
+        // Add friend to my list, $addToSet avoids duplicates
         const user = await User.findByIdAndUpdate(
             userId,
-            { $addToSet: { friends: friendId } }, // $addToSet מונע כפילויות אוטומטית!
-            { new: true } // מחזיר את המשתמש המעודכן
-        ).populate('friends', 'username isOnline wins'); // מחזיר כבר את הפרטים המעודכנים ללובי
+            { $addToSet: { friends: friendId } },
+            { new: true }
+        ).populate('friends', 'username isOnline wins');
 
-        //  הוסף אותי רק אם אני לא קיים
+        // Add me to the friend's list
         const friend = await User.findByIdAndUpdate(
             friendId,
             { $addToSet: { friends: userId } },
@@ -112,7 +110,7 @@ exports.addFriend = async (req, res) => {
     }
 };
 
-// 3. Get Friends List
+// Returns a user's friend list
 exports.getUserFriends = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId).populate('friends', 'username isOnline wins');
@@ -122,7 +120,7 @@ exports.getUserFriends = async (req, res) => {
         res.status(500).json({ message: "Error fetching friends" });
     }
 };
-// מחיקת משתמש לצמיתות
+// Permanently deletes a user account
 exports.deleteUser = async (req, res) => {
     const { userId } = req.body;
 
@@ -131,13 +129,13 @@ exports.deleteUser = async (req, res) => {
             return res.status(400).json({ message: "User ID is required" });
         }
 
-        // 1. הסרת המשתמש מרשימות החברים של כולם (ניקוי שאריות)
+        // Remove this user from everyone's friend lists
         await User.updateMany(
             { friends: userId },
             { $pull: { friends: userId } }
         );
 
-        // 2. מחיקת המשתמש עצמו
+        // Delete the user document
         const deletedUser = await User.findByIdAndDelete(userId);
 
         if (!deletedUser) {
@@ -151,7 +149,7 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: "Error deleting account" });
     }
 };
-// עדכון אימייל
+// Updates the user's email
 exports.updateEmail = async (req, res) => {
     const { userId, newEmail } = req.body;
 

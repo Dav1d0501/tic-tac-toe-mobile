@@ -21,7 +21,7 @@ const GameScreen = ({ route, navigation }) => {
 
   const currentSize = mode === "multiplayer" ? onlineSize : localSize;
 
-  // Sends back to the lobby if we reached a multiplayer game with no room
+  // Sends back to the lobby if there is no room
   useEffect(() => {
     if (mode === "multiplayer" && !room) {
       Alert.alert("Lost connection", "Please join via Lobby.");
@@ -29,7 +29,7 @@ const GameScreen = ({ route, navigation }) => {
     }
   }, [mode, room, navigation]);
 
-  // Becomes the new host if the original host leaves
+  // Promotes this player to host if the host leaves
   useEffect(() => {
     if (mode !== "multiplayer") return;
     const handleYouAreHost = () => {
